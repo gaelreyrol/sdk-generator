@@ -10,6 +10,7 @@ GOLINT_DOCKER_TAG = v1.54-alpine
 BUSYBOX_DOCKER_TAG = 1
 GRADLE_DOCKER_TAG = 8.2
 PYTHON_DOCKER_TAG = 3.10
+COMPOSER_DOCKER_TAG = 2.7 
 # Other config
 CONFIG_DIR = ${PWD}/config
 CLIENTS_OUTPUT_DIR = ${PWD}/clients
@@ -98,6 +99,19 @@ build-client-dotnet:
 	# For some reason the first round of formatting fails with an error - running it again produces the correct result
 	make run-in-docker sdk_language=dotnet image=mcr.microsoft.com/dotnet/sdk:${DOTNET_DOCKER_TAG} command="/bin/sh -c 'dotnet format ./OpenFga.Sdk.sln'" || true
 	make run-in-docker sdk_language=dotnet image=mcr.microsoft.com/dotnet/sdk:${DOTNET_DOCKER_TAG} command="/bin/sh -c 'dotnet format ./OpenFga.Sdk.sln'"
+
+### PHP
+.PHONY: build-client-php
+build-client-php:
+	rm -rf ${CLIENTS_OUTPUT_DIR}/fga-php-sdk/vendor
+	make build-client sdk_language=php tmpdir=${TMP_DIR}
+	make run-in-docker sdk_language=php image=composer:${COMPOSER_DOCKER_TAG} command="/bin/sh -c '/usr/bin/composer install'"
+	make run-in-docker sdk_language=php image=composer:${COMPOSER_DOCKER_TAG} command="/bin/sh -c './vendor/bin/php-cs-fixer fix --allow-risky=yes'"
+
+.PHONY: test-client-php
+test-client-php: build-client-php
+	make run-in-docker sdk_language=php image=composer:${COMPOSER_DOCKER_TAG} command="/bin/sh -c '/usr/bin/composer install'"
+	make run-in-docker sdk_language=php image=composer:${COMPOSER_DOCKER_TAG} command="/bin/sh -c './vendor/bin/phpunit'"
 
 ### Python
 .PHONY: tag-client-python
