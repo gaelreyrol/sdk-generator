@@ -31,6 +31,7 @@ pull-docker-images:
 	docker pull mcr.microsoft.com/dotnet/sdk:${DOTNET_DOCKER_TAG}
 	docker pull busybox:${BUSYBOX_DOCKER_TAG}
 	docker pull gradle:${GRADLE_DOCKER_TAG}
+	docker pull composer:${COMPOSER_DOCKER_TAG}
 
 ## Building and Testing
 .PHONY: test
